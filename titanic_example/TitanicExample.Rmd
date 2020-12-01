@@ -318,8 +318,6 @@ print(rfcv)
 ```
 
 ```{r}
-set.seed(1412)
-class_dat <- twoClassSim(1000)
 
 ctrl <- trainControl(classProbs = TRUE,
                      summaryFunction = twoClassSummary)
@@ -341,7 +339,28 @@ ggplot(lda_data, aes(x = Training_Size, y = ROC, color = Data)) +
   theme_bw()
 ```
 
+```{r}
+set.seed(123) 
+train.control <- trainControl(method = "repeatedcv",
+                           number = 3,
+                           repeats = 3,
+                           classProbs = TRUE,
+                           summaryFunction = twoClassSummary,
+                           search = "random")
+# search: {random, grid}
+# tuneLength: number of combinations
+rfhyp <- train(make.names(Survived)~ ., data=train.set,
+              trControl=train.control,
+              method='rf',
+              metric='ROC',
+              tuneLength=10
+              )
+print(rfhyp)
+```
 
 
+```{r}
+plot(rfhyp)
+```
 
 
