@@ -64,5 +64,27 @@ hiris <- hclust(dist(df[,1:4], method="minkowski"),
                 method="complete")
 plot(hiris, hang = -1, cex = 0.6)
 ```
+```{r}
+library(factoextra)
+data("multishapes")
+dbs <- multishapes[, 1:2]
+plot(dbs)
+```
+
+```{r}
+set.seed(123)
+km.res <- kmeans(dbs, 5, nstart = 25)
+fviz_cluster(km.res, dbs, ellipse = TRUE, geom = "point")
+```
+
+```{r}
+library(fpc)
+plot(
+  fpc::dbscan(dbs, eps=0.15, MinPts = 5),
+  dbs, 
+  main = "DBSCAN", 
+  frame = FALSE
+)
+```
 
 
