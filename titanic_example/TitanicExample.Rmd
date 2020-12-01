@@ -277,11 +277,17 @@ write.csv(res_dt,file="res_dt.csv",row.names = F)
 ```
 
 # Random Forest
+```{r}
+as.vector(train.set[1])
+```
 
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Let's try to predict survival using a random forest.
-model_rf<-randomForest(Survived~.,data=train.set)
+model_rf<-randomForest(x=train.set[, 2:8],
+               y=train.set$Survived,
+               
+               )
 # Let's look at the error
 plot(model_rf)
 pred.train.rf <- predict(model_rf,test.set)
@@ -294,8 +300,5 @@ recall
 F1<- 2*presicion*recall/(presicion+recall)
 F1
 # Let's run this model on the test set:
-pred.test.rf <- predict(model_rf,test_im)[1:418]
-res_rf<- data.frame(test$PassengerId,pred.test.rf)
-names(res_rf)<-c("PassengerId","Survived")
-write.csv(res_rf,file="res_rf.csv",row.names = F)
+pred.test.rf <- predict(model_rf,test.set)
 ```
