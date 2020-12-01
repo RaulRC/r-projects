@@ -3,16 +3,6 @@ title: "R Notebook"
 output: html_notebook
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-install.packages("rpart.plot")
-install.packages("randomForest")
-install.packages("scales")
-install.packages("caret")
-install.packages("mltools")
-install.packages("e1071")
-```
-
 # Introduction
 
 This analysis attempts to predicate the probability for survival of the Titanic passengers. In order to do this, I will use the different features available about the passengers, use a subset of the data to train an algorithm and then run the algorithm on the rest of the data set to get a prediction. 
@@ -33,7 +23,6 @@ library(ggplot2)
 library(dplyr)
 library(GGally)
 library(rpart)
-library(scales)
 library(rpart.plot)
 library(randomForest)
 library(caret)
@@ -42,8 +31,8 @@ library(e1071)
 
 # Data Loading:
 
-test <- read.csv('./titanic/test.csv', stringsAsFactors = FALSE)
-train <- read.csv('./titanic/train.csv', stringsAsFactors = FALSE)
+test <- read.csv('./data/test.csv', stringsAsFactors = FALSE)
+train <- read.csv('./data/train.csv', stringsAsFactors = FALSE)
 ```
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
