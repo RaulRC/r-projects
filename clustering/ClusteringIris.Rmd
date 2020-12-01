@@ -5,8 +5,9 @@ output: html_notebook
 
 ```{r}
 library(ggplot2)
+library(ggdendro)
 library(cluster)
-
+library(factoextra)
 ```
 
 ```{r}
@@ -49,4 +50,19 @@ for (i in 1:10){
 }
 plot(1:10, tot.withinss, type="b", pch=19)
 ```
+
+```{r}
+irisCluster <- kmeans(df[,1:4], center=3, nstart=20)
+fviz_silhouette(silhouette(irisCluster$cluster, dist(df[,1:4])))
+```
+
+```{r}
+#dist method: {euclidean, maximum, manhattan, canberra, binary, minkowski}
+#hclust method: {single, complete, average}
+
+hiris <- hclust(dist(df[,1:4], method="minkowski"),
+                method="complete")
+plot(hiris, hang = -1, cex = 0.6)
+```
+
 
