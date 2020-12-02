@@ -363,4 +363,16 @@ print(rfhyp)
 plot(rfhyp)
 ```
 
+```{r}
+library(pROC)
+preds <- predict(rfhyp, test.set, type="prob")
+roc_curve <- roc(test.set$Survived, preds$X1)
+#plot.roc(roc_curve, print.thres="best", print.thres.best.method = "closest.topleft")
+
+
+ggroc(roc_curve, alpha = 1, colour = "orange", linetype = 1, size = 1) + theme_minimal() + ggtitle(sprintf("ROC curve. AUC = %.3f",roc_curve$auc)) + 
+    geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed") + xlab("FPR") + ylab("TPR") 
+
+
+```
 
