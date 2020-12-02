@@ -44,7 +44,8 @@ str(full)
 ```
 
 ```{r}
-View(full)
+#View(full)
+head(full)
 ```
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
@@ -318,6 +319,13 @@ print(rfcv)
 ```
 
 ```{r}
+train.set
+```
+
+
+```{r}
+
+levels(train.set$Survived) <- c("X0", "X1")
 
 ctrl <- trainControl(classProbs = TRUE,
                      summaryFunction = twoClassSummary)
