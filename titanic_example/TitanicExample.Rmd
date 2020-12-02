@@ -395,3 +395,7 @@ ggplot(as.data.frame(cm$table), aes(Prediction,sort(Label,decreasing = T), fill=
         scale_y_discrete(labels=c("X1","X0"))
 ```
 
+```{r}
+plot(varImp(rfhyp))
+```
+
