@@ -382,6 +382,10 @@ cm <- confusionMatrix(preds,
                 positive="X1", 
                 dnn = c("Prediction", "Label")
                 )
+cm 
+```
+
+```{r}
 
 ggplot(as.data.frame(cm$table), aes(Prediction,sort(Label,decreasing = T), fill= Freq)) +
         geom_tile() + geom_text(aes(label=Freq)) +
@@ -389,9 +393,5 @@ ggplot(as.data.frame(cm$table), aes(Prediction,sort(Label,decreasing = T), fill=
         labs(x = "Prediction",y = "True Label") +
         scale_x_discrete(labels=c("X0","X1")) +
         scale_y_discrete(labels=c("X1","X0"))
-```
-
-```{r}
-cm
 ```
 
