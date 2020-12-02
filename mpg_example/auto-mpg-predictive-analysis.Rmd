@@ -331,6 +331,9 @@ visreg(model)
 
 ```{r}
 predictions <- predict(model, newdata = testData)
+# MSE
+print(sprintf("Mean of squared errors (MSE): %.3f", sqrt(mean((predictions - testData$mpg)^2))))
+# R2 score
+print(sprintf("R2 score: %.3f", R2(predictions, testData$mpg)))
 
-sqrt(mean((predictions - testData$mpg)^2))
 ```
