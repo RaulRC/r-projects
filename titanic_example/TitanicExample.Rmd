@@ -385,9 +385,12 @@ cm <- confusionMatrix(preds,
 ggplot(as.data.frame(cm$table), aes(Prediction,sort(Label,decreasing = T), fill= Freq)) +
         geom_tile() + geom_text(aes(label=Freq)) +
         scale_fill_gradient(low="white", high="#009194") +
-        labs(x = "Reference",y = "Prediction") +
+        labs(x = "Prediction",y = "True Label") +
         scale_x_discrete(labels=c("X0","X1")) +
         scale_y_discrete(labels=c("X0","X1"))
 ```
 
+```{r}
+cm
+```
 
