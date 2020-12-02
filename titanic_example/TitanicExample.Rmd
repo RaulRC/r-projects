@@ -248,8 +248,8 @@ fit.knn
 
 ```{r}
 trainControl <- trainControl(method="repeatedcv", number=10, repeats=3)
-fit.knn <- train(Survived~., data=train.set, method="svmLinear", metric="Accuracy", trControl=trainControl)
-fit.knn
+model.svm <- train(Survived~., data=train.set, method="svmLinear", metric="Accuracy", trControl=trainControl)
+model.svm
 ```
 
 # Decision Trees
@@ -375,4 +375,19 @@ ggroc(roc_curve, alpha = 1, colour = "orange", linetype = 1, size = 1) + theme_m
 
 
 ```
+```{r}
+preds <- predict(rfhyp, test.set)
+cm <- confusionMatrix(preds,
+                as.factor(make.names(test.set$Survived)),
+                dnn = c("Prediction", "Label")
+                )
+
+ggplot(as.data.frame(cm$table), aes(Prediction,sort(Label,decreasing = T), fill= Freq)) +
+        geom_tile() + geom_text(aes(label=Freq)) +
+        scale_fill_gradient(low="white", high="#009194") +
+        labs(x = "Reference",y = "Prediction") +
+        scale_x_discrete(labels=c("X0","X1")) +
+        scale_y_discrete(labels=c("X0","X1"))
+```
+
 
