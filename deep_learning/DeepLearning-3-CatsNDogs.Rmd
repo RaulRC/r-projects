@@ -1,0 +1,214 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+The Dogs vs. Cats dataset that you’ll use isn’t packaged with Keras. It was made available by Kaggle as part of a computer-vision competition in late 2013, back when convnets weren’t mainstream. You can download the original dataset from www.kaggle.com/c/dogs-vs-cats/data 
+
+***
+Copying images to train, validation, and test directories
+***
+
+```{r}
+original_dataset_dir <- "~/datasets/catsndogs/train"
+
+base_dir <- "~/Downloads/cats_and_dogs_small" 
+dir.create(base_dir)
+train_dir <- file.path(base_dir, "train") 
+dir.create(train_dir)
+
+validation_dir <- file.path(base_dir, "validation") 
+dir.create(validation_dir)
+test_dir <- file.path(base_dir, "test") 
+dir.create(test_dir)
+train_cats_dir <- file.path(train_dir, "cats") 
+dir.create(train_cats_dir)
+
+train_dogs_dir <- file.path(train_dir, "dogs") 
+dir.create(train_dogs_dir)
+
+validation_cats_dir <- file.path(validation_dir, "cats") 
+dir.create(validation_cats_dir)
+
+validation_dogs_dir <- file.path(validation_dir, "dogs") 
+dir.create(validation_dogs_dir)
+
+test_cats_dir <- file.path(test_dir, "cats")
+dir.create(test_cats_dir)
+test_dogs_dir <- file.path(test_dir, "dogs") 
+dir.create(test_dogs_dir)
+
+fnames <- paste0("cat.", 1:1000, ".jpg") 
+file.copy(file.path(original_dataset_dir, fnames),file.path(train_cats_dir))
+
+fnames <- paste0("cat.", 1001:1500, ".jpg") 
+file.copy(file.path(original_dataset_dir, fnames),
+file.path(validation_cats_dir))
+
+fnames <- paste0("cat.", 1501:2000, ".jpg")
+file.copy(file.path(original_dataset_dir, fnames),
+file.path(test_cats_dir))
+
+fnames <- paste0("dog.", 1:1000, ".jpg") 
+file.copy(file.path(original_dataset_dir, fnames),
+file.path(train_dogs_dir))
+
+fnames <- paste0("dog.", 1001:1500, ".jpg") 
+file.copy(file.path(original_dataset_dir, fnames),
+file.path(validation_dogs_dir))
+
+fnames <- paste0("dog.", 1501:2000, ".jpg") 
+file.copy(file.path(original_dataset_dir, fnames),
+file.path(test_dogs_dir))
+
+# As a sanity check, let’s count how many pictures are in each training split (train/validation/test):
+
+cat("total training cat images:", length(list.files(train_cats_dir)), "\n")
+cat("total training dog images:", length(list.files(train_dogs_dir)), "\n")
+cat("total validation cat images:", length(list.files(validation_cats_dir)), "\n")
+cat("total validation dog images:", length(list.files(validation_dogs_dir)), "\n")
+cat("total test cat images:", length(list.files(test_cats_dir)), "\n")
+cat("total test dog images:", length(list.files(test_dogs_dir)), "\n")
+```
+
+***
+Instantiating a small convnet for cats vs. dogs classification
+***
+
+```{r}
+library(keras)
+model <- keras_model_sequential() %>%
+layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = "relu",
+                input_shape = c(150, 150, 3)) %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_conv_2d(filters = 128, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_conv_2d(filters = 128, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+   layer_flatten() %>%
+  layer_dense(units = 512, activation = "relu") %>%
+  layer_dense(units = 1, activation = "sigmoid")
+```
+
+```{r}
+summary(model)
+```
+
+***
+Configuring the model for training
+***
+
+```{r}
+model %>% compile(
+loss = "binary_crossentropy",
+optimizer = optimizer_rmsprop(lr = 1e-4), metrics = c("acc")
+)
+```
+
+***
+Data Preprocessing
+
+Currently, the data sits on a drive as JPEG files, so the steps for getting it into the network are roughly as follows:
+
+1. Read the picture files.
+2. Decode the JPEG content to RGB grids of pixels. 
+3. Convert these into floating-point tensors.
+4. Rescale the pixel values (between 0 and 255) to the [0, 1] interval (as you know, neural networks prefer to deal with small input values).
+
+It may seem a bit daunting, but thankfully Keras has utilities to take care of these steps automatically. Keras includes a number of image processing helper tools. In particular, it includes the image_data_generator() function, which can automatically turn image files on disk into batches of pre-processed tensors. This is what we will use here.
+
+***
+
+```{r}
+train_datagen <- image_data_generator(rescale = 1/255) 
+validation_datagen <- image_data_generator(rescale = 1/255)
+
+train_generator <- flow_images_from_directory( train_dir,
+train_datagen,
+target_size = c(150, 150),
+  batch_size = 20,
+  class_mode = "binary"
+)
+validation_generator <- flow_images_from_directory( validation_dir,
+validation_datagen,
+target_size = c(150, 150),
+  batch_size = 20,
+  class_mode = "binary"
+)
+```
+
+***
+Display a batch of data and labels
+*** 
+
+```{r}
+batch <- generator_next(train_generator)
+str(batch)
+```
+
+***
+Fitting the model using a batch generator
+***
+
+```{r}
+history <- model %>% fit_generator( train_generator,
+steps_per_epoch = 100,
+epochs = 30,
+  validation_data = validation_generator,
+  validation_steps = 50
+)
+```
+
+
+***
+Save the model
+***
+
+```{r}
+ model %>% save_model_hdf5("cats_and_dogs_small_1.h5")
+```
+
+
+```{r}
+plot(history)
+```
+
+
+***
+Data augmentation
+***
+
+```{r}
+datagen <- image_data_generator( 
+  rescale = 1/255, 
+  rotation_range = 40,
+  width_shift_range = 0.2,
+  height_shift_range = 0.2,
+  shear_range = 0.2,
+  zoom_range = 0.2, 
+  horizontal_flip = TRUE, 
+  fill_mode = "nearest"
+)
+```
+
+```{r}
+fnames <- list.files(train_cats_dir, full.names = TRUE) 
+img_path <- fnames[[3]]
+img <- image_load(img_path, target_size = c(150, 150)) 
+img_array <- image_to_array(img)
+img_array <- array_reshape(img_array, c(1, 150, 150, 3))
+augmentation_generator <- flow_images_from_data( 
+  img_array,
+  generator = datagen,
+  batch_size = 1
+)
+op <- par(mfrow = c(2, 2), pty = "s", mar = c(1, 0, 1, 0)) 
+for (i in 1:4) {
+batch <- generator_next(augmentation_generator)
+plot(as.raster(batch[1,,,])) }
+par(op)
+```
+

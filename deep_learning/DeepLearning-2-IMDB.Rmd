@@ -52,7 +52,7 @@ x_test <- vectorize_sequences(test_data)
 ```
 
 ```{r}
-> str(x_train[1,])
+str(x_train[1,])
 ```
 
 ```{r}
@@ -118,4 +118,3 @@ results
 ```{r}
 model %>% predict(x_test[1:10,])
 ```
-
