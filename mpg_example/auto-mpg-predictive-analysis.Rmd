@@ -324,6 +324,7 @@ summary(model)
 ```{r}
 plot(model)
 ```
+[About visreg](https://pbreheny.github.io/visreg/)
 
 ```{r}
 visreg(model)

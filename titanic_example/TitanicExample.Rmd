@@ -51,6 +51,7 @@ head(full)
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # Missing values
 colSums(is.na(full))
+
 colSums(full=="")
 ```
 
@@ -158,13 +159,14 @@ sum(is.na(full$Age))
 
 # There are a lot of missing values in the Age feature, so I'll put the mean instead of the missing values.
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-full$Age[is.na(full$Age)] <- mean(full$Age,na.rm=T)
+full$Age[is.na(full$Age)] <- mean(full$Age, na.rm=T)
 sum(is.na(full$Age))
 ```
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # The title of the passenger can affect his survive:
 full$Title <- gsub('(.*, )|(\\..*)', '', full$Name)
+
 full$Title[full$Title == 'Mlle']<- 'Miss' 
 full$Title[full$Title == 'Ms']<- 'Miss'
 full$Title[full$Title == 'Mme']<- 'Mrs' 
@@ -355,8 +357,10 @@ train.control <- trainControl(method = "repeatedcv",
                            classProbs = TRUE,
                            summaryFunction = twoClassSummary,
                            search = "random")
+
 # search: {random, grid}
 # tuneLength: number of combinations
+
 rfhyp <- train(make.names(Survived)~ ., data=train.set,
               trControl=train.control,
               method='rf',
@@ -385,6 +389,7 @@ ggroc(roc_curve, alpha = 1, colour = "orange", linetype = 1, size = 1) + theme_m
 ```
 ```{r}
 preds <- predict(rfhyp, test.set)
+
 cm <- confusionMatrix(preds,
                 as.factor(make.names(test.set$Survived)),
                 positive="X1", 
