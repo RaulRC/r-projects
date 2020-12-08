@@ -401,4 +401,87 @@ history <- model %>%
 ```{r}
 plot(history)
 ```
+***
+FEATURE EXTRACTION WITH DATA AUGMENTATION
+Now, let’s review the second technique we mentioned for doing feature extraction, which is much slower and more expensive, but which allows you to use data augmentation during training: extending the conv_base model and running it end to end on the inputs.
+***
+
+***
+Adding a densely connected classifier on top of the convolutional base
+***
+
+```{r}
+model <- keras_model_sequential() %>%
+  conv_base %>%
+  layer_flatten() %>%
+  layer_dense(units = 256, activation = "relu") %>% 
+  layer_dense(units = 1, activation = "sigmoid")
+```
+
+```{r}
+model
+```
+
+```{r}
+cat("This is the number of trainable weights before freezing",
+      "the conv base:", length(model$trainable_weights), "\n")
+freeze_weights(conv_base)
+cat("This is the number of trainable weights after freezing",
+      "the conv base:", length(model$trainable_weights), "\n")
+```
+
+***
+With this setup, only the weights from the two dense layers that you added will be trained. That’s a total of four weight tensors: two per layer (the main weight matrix and the bias vector). Note that in order for these changes to take effect, you must first compile the model. If you ever modify weight trainability after compilation, you should then recompile the model, or these changes will be ignored.
+Now you can start training your model, with the same data-augmentation configuration that you used in the previous example.
+
+
+Training the model end to end with a frozen convolutional base
+***
+
+```{r}
+train_datagen = image_data_generator( 
+  rescale = 1/255,
+  rotation_range = 40, 
+  width_shift_range = 0.2, 
+  height_shift_range = 0.2, 
+  shear_range = 0.2,
+  zoom_range = 0.2, 
+  horizontal_flip = TRUE, 
+  fill_mode = "nearest"
+)
+test_datagen <- image_data_generator(rescale = 1/255)
+train_generator <- flow_images_from_directory( 
+  train_dir,
+  train_datagen,
+  target_size = c(150, 150),
+  batch_size = 20,
+  class_mode = "binary"
+)
+validation_generator <- flow_images_from_directory(
+  validation_dir,
+  test_datagen,
+  target_size = c(150, 150),
+  batch_size = 20,
+  class_mode = "binary"
+)
+model %>% compile(
+  loss = "binary_crossentropy",
+  optimizer = optimizer_rmsprop(lr = 2e-5), 
+  metrics = c("accuracy")
+)
+```
+
+```{r}
+history <- model %>% fit_generator( 
+  train_generator,
+  steps_per_epoch = 100,
+  epochs = 30,
+  validation_data = validation_generator,
+  validation_steps = 50
+)
+```
+
+```{r}
+plot(history)
+```
 
